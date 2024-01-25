@@ -143,6 +143,7 @@ MonoBehaviour:
   tileMat: {fileID: 2100000, guid: c12b1ee0c0e2134479377318d400b401, type: 2}
   tileSize: 10
   yOffset: 0.2
+  draggingOffset: 10
   prefabs:
   - {fileID: 5159800973048100068, guid: fe8f09e8b79b5c841868f14a97bca19b, type: 3}
   - {fileID: 6999405263716558341, guid: 5805f5978794e51408c9630aa2bdadf0, type: 3}

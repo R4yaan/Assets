@@ -8,6 +8,7 @@ public class ChessBoard : MonoBehaviour
     [SerializeField] public Material tileMat;
     [SerializeField] private int tileSize = 10;
     [SerializeField] private float yOffset = 0.2f;
+    [SerializeField] private float draggingOffset = 0.8f;
 
     //Prefabs and colours
     [SerializeField] private GameObject[] prefabs;
@@ -26,6 +27,10 @@ public class ChessBoard : MonoBehaviour
     // Board as 2D array of each tile
     private GameObject[,] board;
     
+    // Piece that is currently selected to be moved
+    private Pieces selectedPiece;
+
+
 
     private void Awake()
     {
@@ -69,6 +74,32 @@ public class ChessBoard : MonoBehaviour
                 currentHover = hitPos;
                 board[hitPos.x, hitPos.y].layer = LayerMask.NameToLayer("Hover");
             }
+            if(Input.GetMouseButtonDown(0))
+            {
+                if(chessPieces[hitPos.x,hitPos.y] != null)
+                {
+                    bool turn = true;
+                    if(turn)
+                    {
+                        selectedPiece = chessPieces[hitPos.x,hitPos.y];
+                    }
+                }
+            }
+            if(selectedPiece != null && Input.GetMouseButtonUp(0))
+            {
+                Vector2Int previousPos = new Vector2Int(selectedPiece.xPos,selectedPiece.yPos);
+                bool legalMove = MoveTo(selectedPiece, hitPos.x, hitPos.y);
+                if(!legalMove)
+                {
+                    selectedPiece.setPos(TileCenter(previousPos.x,previousPos.y));
+                    selectedPiece = null;
+                }
+                else
+                {
+                    selectedPiece = null;
+                }
+            }
+
         }
         else
         {
@@ -79,6 +110,43 @@ public class ChessBoard : MonoBehaviour
                 currentHover = -Vector2Int.one;
             }
         }
+
+        if(selectedPiece)
+        {
+            Plane horizontalPlane = new Plane(Vector3.up, Vector3.up * yOffset);
+            float distance = 0.0f;
+            if(horizontalPlane.Raycast(ray, out distance))
+            {
+                selectedPiece.setPos(ray.GetPoint(distance) + Vector3.up * draggingOffset);
+            }
+        }
+    }
+
+    private bool MoveTo(Pieces selPiece, int x, int y)
+    {
+        Vector2Int previousPos = new Vector2Int(selPiece.xPos, selPiece.yPos);
+        
+        if (chessPieces[x,y] != null)
+        {
+            Pieces targetPiece = chessPieces[x,y];
+
+            if(selPiece.team == targetPiece.team)
+            {
+                return false;
+            }
+            else
+            {
+                Destroy(chessPieces[x,y].gameObject);
+                chessPieces[x,y] = null;
+            }
+        }
+        
+        chessPieces[x,y] = selPiece;
+        chessPieces[previousPos.x,previousPos.y] = null;
+        
+        PositionSinglePiece(x,y);
+
+        return true;
     }
 
     // Generate board with individual tiles
@@ -193,7 +261,7 @@ public class ChessBoard : MonoBehaviour
     {
         chessPieces[x,y].xPos = x;
         chessPieces[x,y].yPos = y;
-        chessPieces[x,y].transform.position = TileCenter(x,y);
+        chessPieces[x,y].setPos(TileCenter(x,y));
     }
 
     // Gets the centre of a tile

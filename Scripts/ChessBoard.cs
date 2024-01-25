@@ -201,9 +201,10 @@ public class ChessBoard : MonoBehaviour
         return tileObj;
     }
 
-    // Spawn pieces
+    // Spawn all pieces by calling SpawnSinglePiece() for each chess piece
     private void SpawnAllPieces()
     {
+        // 8x8 2D array of Pieces objects
         chessPieces = new Pieces[8,8];
 
         int white = 0;
@@ -218,6 +219,7 @@ public class ChessBoard : MonoBehaviour
         chessPieces[5,0] = SpawnSinglePiece(ChessPieceType.Bishop, white);
         chessPieces[6,0] = SpawnSinglePiece(ChessPieceType.Knight, white);
         chessPieces[7,0] = SpawnSinglePiece(ChessPieceType.Rook, white);
+        // Spawn white pawns
         for (int i = 0; i < 8; i++){
             chessPieces[i,1] = SpawnSinglePiece(ChessPieceType.Pawn, white);
         }
@@ -231,17 +233,20 @@ public class ChessBoard : MonoBehaviour
         chessPieces[5,7] = SpawnSinglePiece(ChessPieceType.Bishop, black);
         chessPieces[6,7] = SpawnSinglePiece(ChessPieceType.Knight, black);
         chessPieces[7,7] = SpawnSinglePiece(ChessPieceType.Rook, black);
+        // Soawn black pawns
         for (int i = 0; i < 8; i++){
             chessPieces[i,6] = SpawnSinglePiece(ChessPieceType.Pawn, black);
         }
     }
+    // Spawn a single piece
     private Pieces SpawnSinglePiece(ChessPieceType type, int team)
     {
-        Pieces cPiece = Instantiate(prefabs[(int)type - 1], transform).GetComponent<Pieces>();
+        Pieces cPiece = Instantiate(prefabs[(int)type - 1], transform).GetComponent<Pieces>(); // Spawn a piece
 
         cPiece.type = type;
         cPiece.team = team;
         cPiece.GetComponent<MeshRenderer>().material = teamColour[team];
+        //Sets piece team and type
 
         return cPiece;
     }

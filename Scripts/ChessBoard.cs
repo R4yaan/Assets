@@ -27,10 +27,16 @@ public class ChessBoard : MonoBehaviour
     // Board as 2D array of each tile
     private GameObject[,] board;
     
+    // Boolean storing if it is player's turn
+    private bool turn = true;
+
     // Piece that is currently selected to be moved
     private Pieces selectedPiece;
 
-
+    // List of available moves for a piece at a point in time
+    private List<Vector2Int> availableMoves = new List<Vector2Int>();
+    
+    public static int enPassantX = -1;
 
     private void Awake()
     {
@@ -54,7 +60,7 @@ public class ChessBoard : MonoBehaviour
         // Casts a ray to the tiles based on mouse position
         RaycastHit info;
         Ray ray = currentCamera.ScreenPointToRay(Input.mousePosition);
-        if (Physics.Raycast(ray, out info, 1000, LayerMask.GetMask("Tile", "Hover")))
+        if (Physics.Raycast(ray, out info, 1000, LayerMask.GetMask("Tile", "Hover", "possibleMove")))
         {
             // Gets coordinates of tile hit by ray (under mouse)
             Vector2Int hitPos = LookupTileIndex(info.transform.gameObject);
@@ -70,7 +76,7 @@ public class ChessBoard : MonoBehaviour
             if(currentHover != hitPos)
             {
                 // If mouse moves to hover over a different tile, update the highlighted tile
-                board[currentHover.x, currentHover.y].layer = LayerMask.NameToLayer("Tile");
+                board[currentHover.x, currentHover.y].layer = ContainsValidMove(ref availableMoves, currentHover) ? LayerMask.NameToLayer("possibleMove") : LayerMask.NameToLayer("Tile");
                 currentHover = hitPos;
                 board[hitPos.x, hitPos.y].layer = LayerMask.NameToLayer("Hover");
             }
@@ -78,10 +84,13 @@ public class ChessBoard : MonoBehaviour
             {
                 if(chessPieces[hitPos.x,hitPos.y] != null)
                 {
-                    bool turn = true;
+                    
                     if(turn)
                     {
                         selectedPiece = chessPieces[hitPos.x,hitPos.y];
+
+                        availableMoves = selectedPiece.GetAvailableMoves(ref chessPieces);
+                        HighlightTiles();
                     }
                 }
             }
@@ -92,12 +101,9 @@ public class ChessBoard : MonoBehaviour
                 if(!legalMove)
                 {
                     selectedPiece.setPos(TileCenter(previousPos.x,previousPos.y));
-                    selectedPiece = null;
                 }
-                else
-                {
-                    selectedPiece = null;
-                }
+                selectedPiece = null;
+                RemoveHighlightTiles();
             }
 
         }
@@ -106,7 +112,7 @@ public class ChessBoard : MonoBehaviour
             // Reset tile highlighting when not hovering over any tile
             if (currentHover != -Vector2Int.one)
             {
-                board[currentHover.x, currentHover.y].layer = LayerMask.NameToLayer("Tile");
+                board[currentHover.x, currentHover.y].layer = ContainsValidMove(ref availableMoves, currentHover) ? LayerMask.NameToLayer("possibleMove") : LayerMask.NameToLayer("Tile");
                 currentHover = -Vector2Int.one;
             }
         }
@@ -124,6 +130,16 @@ public class ChessBoard : MonoBehaviour
 
     private bool MoveTo(Pieces selPiece, int x, int y)
     {
+        
+
+        if(!ContainsValidMove(ref availableMoves, new Vector2(x,y)))
+        {
+            return false;
+        }
+        
+        enPassantX = -1;
+        
+
         Vector2Int previousPos = new Vector2Int(selPiece.xPos, selPiece.yPos);
         
         if (chessPieces[x,y] != null)
@@ -140,10 +156,26 @@ public class ChessBoard : MonoBehaviour
                 chessPieces[x,y] = null;
             }
         }
+        else
+        {
+            if(selPiece.type == ChessPieceType.Pawn && Math.Abs(y - selPiece.yPos) == 1 && Math.Abs(x - selPiece.xPos) == 1)
+            {
+                Destroy(chessPieces[x,(selPiece.team == 0) ? (y-1) : (y+1)].gameObject);
+                chessPieces[x,(selPiece.team == 0) ? (y-1) : (y+1)] = null;
+            }
+        }
+
         
         chessPieces[x,y] = selPiece;
         chessPieces[previousPos.x,previousPos.y] = null;
         
+        
+        if(selPiece.type == ChessPieceType.Pawn && Math.Abs(y - selPiece.yPos) == 2)
+        {
+            enPassantX = x;
+        }
+        
+
         PositionSinglePiece(x,y);
 
         return true;
@@ -267,6 +299,37 @@ public class ChessBoard : MonoBehaviour
         chessPieces[x,y].xPos = x;
         chessPieces[x,y].yPos = y;
         chessPieces[x,y].setPos(TileCenter(x,y));
+    }
+
+
+    private void HighlightTiles()
+    {
+        for (int i = 0; i < availableMoves.Count; i++)
+        {
+            board[availableMoves[i].x, availableMoves[i].y].layer = LayerMask.NameToLayer("possibleMove");
+        }
+    }
+
+    private void RemoveHighlightTiles()
+    {
+        for (int i = 0; i < availableMoves.Count; i++)
+        {
+            board[availableMoves[i].x, availableMoves[i].y].layer = LayerMask.NameToLayer("Tile");
+        }
+        availableMoves.Clear();
+    }
+
+
+    private bool ContainsValidMove(ref List<Vector2Int> moves, Vector2 pos)
+    {
+        for (int i = 0; i < moves.Count; i++)
+        {
+            if(moves[i].x == pos.x && moves[i].y == pos.y)
+            {
+                return true;
+            }
+        }
+        return false;
     }
 
     // Gets the centre of a tile

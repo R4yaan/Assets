@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using UnityEngine;
 
 // Stores and numbers all piece types to be immutable
@@ -11,6 +12,7 @@ public enum ChessPieceType
     Queen = 5,
     King = 6
 }
+
 
 // Parent class representing individual chess pieces
 public class Pieces : MonoBehaviour
@@ -28,11 +30,20 @@ public class Pieces : MonoBehaviour
     // Target position and scale for movements and animations
     private Vector3 targetPos;
     private Vector3 targetScale;
-
+    
 
     private void Update()
     {
         transform.position = Vector3.Lerp(transform.position, targetPos, Time.deltaTime * 8);
+    }
+
+    public virtual List<Vector2Int> GetAvailableMoves(ref Pieces[,] board)
+    {
+        List<Vector2Int> r = new List<Vector2Int>();
+
+        r.Add(new Vector2Int(3,3));
+
+        return r;
     }
 
     public virtual void setPos(Vector3 pos, bool force = false)
@@ -43,4 +54,6 @@ public class Pieces : MonoBehaviour
             transform.position = targetPos;
         }
     }
+
+
 }

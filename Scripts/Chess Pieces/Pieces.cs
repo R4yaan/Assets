@@ -40,9 +40,6 @@ public class Pieces : MonoBehaviour
     public virtual List<Vector2Int> GetAvailableMoves(ref Pieces[,] board)
     {
         List<Vector2Int> r = new List<Vector2Int>();
-
-        r.Add(new Vector2Int(3,3));
-
         return r;
     }
 

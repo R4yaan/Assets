@@ -1,5 +1,8 @@
 using System;
 using System.Collections.Generic;
+using System.Runtime.InteropServices.WindowsRuntime;
+using Mono.Cecil.Cil;
+using Unity.VisualScripting;
 using UnityEngine;
 
 public class ChessBoard : MonoBehaviour
@@ -29,8 +32,11 @@ public class ChessBoard : MonoBehaviour
     // Board as 2D array of each tile
     private GameObject[,] board;
 
-    // Boolean storing if it is the player's turn
-    private bool turn = true;
+    // Boolean storing if it is white's turn
+    private bool whiteTurn = true;
+    private bool isInCheck = false;
+    public GameObject whiteCamera;
+    public GameObject blackCamera;
 
     // Piece that is currently selected to be moved
     private Pieces selectedPiece;
@@ -53,6 +59,9 @@ public class ChessBoard : MonoBehaviour
 
     private void Awake()
     {
+        whiteCamera.SetActive(true);
+        blackCamera.SetActive(false);
+
         // Initialize the chessboard
         CreateBoard(tileSize);
 
@@ -77,6 +86,8 @@ public class ChessBoard : MonoBehaviour
             return;
         }
 
+        
+
         // Casts a ray to the tiles based on mouse position
         RaycastHit info;
         Ray ray = currentCamera.ScreenPointToRay(Input.mousePosition);
@@ -100,16 +111,43 @@ public class ChessBoard : MonoBehaviour
                 currentlyHovering = hitPos;
                 board[hitPos.x, hitPos.y].layer = LayerMask.NameToLayer("Hover");
             }
+
+            Debug.Log(isCheckmate());
+            Debug.Log(isInCheck);
+            if (isCheckmate())
+            {
+                Debug.Log("white wins: " + whiteTurn);
+            }
+
             if (Input.GetMouseButtonDown(0))
             {
                 if (chessPieces[hitPos.x, hitPos.y] != null)
                 {
-
-                    if (turn)
+                    selectedPiece = chessPieces[hitPos.x, hitPos.y];
+                    if ((selectedPiece.team == 0 && !whiteTurn) || (selectedPiece.team == 1 && whiteTurn))
                     {
-                        selectedPiece = chessPieces[hitPos.x, hitPos.y];
-
+                        selectedPiece = null;
+                    }
+                    else
+                    {
                         availableMoves = selectedPiece.GetAvailableMoves(ref chessPieces);
+                        if (availableMoves.Count > 0)
+                        {
+                            List<Vector2Int> movesToRemove = new List<Vector2Int>();
+                            foreach (Vector2Int move in availableMoves)
+                            {
+                                if (!MoveTo(selectedPiece, move.x, move.y, false))
+                                {
+                                    movesToRemove.Add(move);
+                                }
+                            }
+
+                            foreach (Vector2Int illegalMove in movesToRemove)
+                            {
+                                availableMoves.Remove(illegalMove);
+                            }
+                        }
+
                         HighlightTiles();
                     }
                 }
@@ -117,10 +155,17 @@ public class ChessBoard : MonoBehaviour
             if (selectedPiece != null && Input.GetMouseButtonUp(0))
             {
                 Vector2Int previousPos = new Vector2Int(selectedPiece.xPos, selectedPiece.yPos);
-                bool legalMove = MoveTo(selectedPiece, hitPos.x, hitPos.y);
+                bool legalMove = MoveTo(selectedPiece, hitPos.x, hitPos.y, true);
                 if (!legalMove)
                 {
                     selectedPiece.setPos(TileCenter(previousPos.x, previousPos.y));
+                }
+                else
+                {
+                    whiteTurn = !whiteTurn;
+                    whiteCamera.SetActive(!whiteCamera.activeSelf);
+                    blackCamera.SetActive(!blackCamera.activeSelf);
+                    currentCamera = Camera.main;
                 }
                 selectedPiece = null;
                 RemoveHighlightTiles();
@@ -148,16 +193,36 @@ public class ChessBoard : MonoBehaviour
         }
     }
 
-    private bool MoveTo(Pieces selPiece, int x, int y)
+    private bool MoveTo(Pieces selPiece, int x, int y, bool makeChanges)
     {
         if (!ContainsValidMove(ref availableMoves, new Vector2(x, y)))
         {
             return false;
         }
 
-        enPassantX = -1;
+        if (makeChanges)
+        {
+            enPassantX = -1;
+        }
 
         Vector2Int previousPos = new Vector2Int(selPiece.xPos, selPiece.yPos);
+        int teamInCheck = simCheckMove(selPiece, x, y, previousPos);
+        Debug.Log("sim check: " + teamInCheck);
+
+        if (previousPos == new Vector2Int(x, y))
+        {
+            return false;
+        }
+
+
+        
+        
+        Debug.Log("before past " + isInCheck);
+        if (teamInCheck == selPiece.team)
+        {
+            return false;
+        }
+        
 
         if (chessPieces[x, y] != null)
         {
@@ -167,13 +232,13 @@ public class ChessBoard : MonoBehaviour
             {
                 return false;
             }
-            else
+            else if (makeChanges)
             {
                 Destroy(chessPieces[x, y].gameObject);
                 chessPieces[x, y] = null;
             }
         }
-        else
+        else if (makeChanges)
         {
             if (selPiece.type == ChessPieceType.Pawn && Math.Abs(y - selPiece.yPos) == 1 && Math.Abs(x - selPiece.xPos) == 1)
             {
@@ -182,16 +247,97 @@ public class ChessBoard : MonoBehaviour
             }
         }
 
-        chessPieces[x, y] = selPiece;
-        chessPieces[previousPos.x, previousPos.y] = null;
-
-        if (selPiece.type == ChessPieceType.Pawn && Math.Abs(y - selPiece.yPos) == 2)
+        Debug.Log("made it past");
+        Debug.Log("after past " + isInCheck);
+        teamInCheck = simCheckMove(selPiece, x, y, previousPos);
+        if (makeChanges)
         {
-            enPassantX = x;
+            Debug.Log("making changes");
+            if (teamInCheck == -1)
+            {
+                Debug.Log("no check");
+                isInCheck = false;
+            }
+            else
+            {
+                Debug.Log("yes check");
+                isInCheck = true;
+            }
+        }
+        Debug.Log("after if " + isInCheck);
+        
+
+        if (makeChanges)
+        {
+            chessPieces[x, y] = selPiece;
+            chessPieces[previousPos.x, previousPos.y] = null;
+
+            if (selPiece.type == ChessPieceType.Pawn && Math.Abs(y - selPiece.yPos) == 2)
+            {
+                enPassantX = x;
+            }
+        
+        
+
+            PositionSinglePiece(x, y);
         }
 
-        PositionSinglePiece(x, y);
+        return true;
+    }
 
+    private int simCheckMove(Pieces selPiece, int targetX, int targetY, Vector2Int previousPos)
+    {
+        Pieces[,] chessPiecesCopy = new Pieces[8,8];
+        Array.Copy(chessPieces, chessPiecesCopy, chessPieces.Length);
+
+        chessPiecesCopy[targetX, targetY] = selPiece;
+        chessPiecesCopy[previousPos.x, previousPos.y] = null;
+        
+
+        foreach (Pieces currentSimPiece in chessPiecesCopy)
+        {
+            if (currentSimPiece != null)
+            {
+                List<Vector2Int> availableMovesCopy = currentSimPiece.GetAvailableMoves(ref chessPiecesCopy);
+
+                foreach (Vector2Int move in availableMovesCopy)
+                {
+                    Pieces targetPos = chessPiecesCopy[move.x, move.y];
+                    if (targetPos != null && targetPos.type == ChessPieceType.King && targetPos.team != currentSimPiece.team)
+                    {
+                        return targetPos.team;
+                    }
+                }
+            }
+        }
+
+        return -1;
+    }
+
+    private bool isCheckmate()
+    {
+        if (!isInCheck)
+        {
+            return false;
+        }
+
+        int team = whiteTurn ? 0 : 1;
+
+        foreach (Pieces currentPiece in chessPieces)
+        {
+            if (currentPiece != null && currentPiece.team == team)
+            {
+                List<Vector2Int> availableMovesCopy = currentPiece.GetAvailableMoves(ref chessPieces);
+
+                foreach (Vector2Int move in availableMovesCopy)
+                {
+                    if (simCheckMove(currentPiece, move.x, move.y, new Vector2Int(currentPiece.xPos, currentPiece.yPos)) != currentPiece.team)
+                    {
+                        return false;
+                    }
+                }
+            }
+        }
         return true;
     }
 
@@ -341,9 +487,9 @@ public class ChessBoard : MonoBehaviour
 
     private bool ContainsValidMove(ref List<Vector2Int> moves, Vector2 pos)
     {
-        for (int i = 0; i < moves.Count; i++)
+        foreach (Vector2Int move in moves)
         {
-            if (moves[i].x == pos.x && moves[i].y == pos.y)
+            if (move.x == pos.x && move.y == pos.y)
             {
                 return true;
             }
@@ -377,16 +523,16 @@ public class ChessBoard : MonoBehaviour
 
     private Pieces[,] InterpretFEN(string[] FEN)
     {
-        Pieces[,] pieces;
+        Pieces[,] pieces = new Pieces[8, 8];
 
         int rank = 7;
         int file = 0;
 
         int white = 0;
-        int black = 0;
-        var pieceCodes = new Dictionary<string, Pieces>()
+        int black = 1;
+        var pieceCodes = new Dictionary<char, Pieces>()
         {
-            {"r", SpawnSinglePiece(ChessPieceType.Rook, black)},
+            {'r', SpawnSinglePiece(ChessPieceType.Rook, black)},
             {'n', SpawnSinglePiece(ChessPieceType.Knight, black)},
             {'b', SpawnSinglePiece(ChessPieceType.Bishop, black)},
             {'q', SpawnSinglePiece(ChessPieceType.Queen, black)},
@@ -399,67 +545,41 @@ public class ChessBoard : MonoBehaviour
             {'K', SpawnSinglePiece(ChessPieceType.King, white)},
             {'P', SpawnSinglePiece(ChessPieceType.Pawn, white)}
         };
-       for (int i = 0; i < FEN[0].Length()-1; i++)
-       {
-        char character = FEN[0][character]
-        if (character == "/")
+        for (int i = 0; i < FEN[0].Length; i++)
         {
-            rank--;
-            file = 0;
-        }
-        if int.TryParse(character, out int j)
-        {
-            for (int tile = file; tile < j; tile++)
+            char character = FEN[0][i];
+            if (character == '/')
             {
-                pieces[tile, rank] = null;
+                rank--;
+                file = 0;
+            }
+            else if (char.IsDigit(character))
+            {
+                file += int.Parse(character.ToString());
+            }
+            else
+            {
+                pieces[file, rank] = pieceCodes[character];
+                file++;
             }
         }
-        else
-        {
-           pieces[tile, rank] = pieceCodes[character]
-           file++; 
-        }
-       }
 
 
-       turn = FEN[1];
+        whiteTurn = FEN[1] == "w";
+
+        whiteKingCastle = FEN[2].Contains("K");
+        whiteQueenCastle = FEN[2].Contains("Q");
+        blackKingCastle = FEN[2].Contains("k");
+        blackQueenCastle = FEN[2].Contains("q");
 
 
-       whiteKingCastle = false;
-       whiteQueenCastle = false;
-       blackKingCastle = false;
-       blackQueenCastle = false;
-
-       for (int i = 0; i <FEN[2].Length-1; i++)
-       {
-        if (FEN[2][i] == "-")
-        {
-            break;
-        }
-        else if (FEN[2][i] == "K")
-        {
-            whiteKingCastle = true;
-        }
-        else if (FEN[2][i] == "Q")
-        {
-            whiteQueenCastle = true;
-        }
-        else if (FEN[2][i] == "k")
-        {
-            blackKingCastle = true;
-        }
-        else if (FEN[2][i] == "q")
-        {
-            blackQueenCastle = true;
-        }
-       }
-
-       
-       char enPassant = FEN[3][0];
-       enPassantX = char.ToUpper(enPassant) - 65;
+        char enPassant = FEN[3][0];
+        enPassantX = char.ToUpper(enPassant) - 65;
 
 
-       halfmoveClock = FEN[4][0];
-       fullmoveClock = FEN[4][2];
+        halfmoveClock = int.Parse(FEN[4]);
+        fullmoveClock = int.Parse(FEN[5]);
+
+        return pieces;
     }
 }

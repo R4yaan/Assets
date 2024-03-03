@@ -3,8 +3,6 @@ using UnityEngine;
 
 public class Pawn : Pieces
 {
-    
-
     public override List<Vector2Int> GetAvailableMoves(ref Pieces[,] board)
     {
         List<Vector2Int> r = new List<Vector2Int>();
@@ -18,35 +16,45 @@ public class Pawn : Pieces
         }
 
         // Move two squares forward from starting position
-        if (onBoard(xPos, yPos + (2 * direction)) && (yPos - 3.5) * direction == -2.5 && board[xPos, yPos + (2 * direction)] == null)
+        if (onBoard(xPos, yPos + (2 * direction)) && (yPos == 1 || yPos == 6) && board[xPos, yPos + direction] == null && board[xPos, yPos + (2 * direction)] == null)
         {
             r.Add(new Vector2Int(xPos, yPos + (2 * direction)));
         }
 
         // Capture diagonally on the right
-        if (onBoard(xPos + direction, yPos + direction) && board[xPos + direction, yPos + direction] != null && board[xPos + direction, yPos + direction].team != team)
+        if (onBoard(xPos + direction, yPos + direction))
         {
-            r.Add(new Vector2Int(xPos + direction, yPos + direction));
+            // Check if there's a piece at the target position
+            if (board[xPos + direction, yPos + direction] != null)
+            {
+                // Check if the piece at the target position is of a different team
+                if (board[xPos + direction, yPos + direction].team != team)
+                {
+                    r.Add(new Vector2Int(xPos + direction, yPos + direction));
+                }
+            }
+            else if (xPos + direction == ChessBoard.enPassantX && yPos == (4 - team))
+            {
+                // Add en passant move if applicable
+                r.Add(new Vector2Int(xPos + direction, yPos + direction));
+            }
         }
 
         // Capture diagonally on the left
-        if (onBoard(xPos - direction, yPos + direction) && board[xPos - direction, yPos + direction] != null && board[xPos - direction, yPos + direction].team != team)
+        if (onBoard(xPos - direction, yPos + direction))
         {
-            r.Add(new Vector2Int(xPos - direction, yPos + direction));
-        }
-
-        // En passant
-        if (ChessBoard.enPassantX != -1)
-        {
-            // Check for en passant on the right
-            if (onBoard(xPos + direction, yPos + direction) && xPos + direction == ChessBoard.enPassantX && board[xPos + direction, yPos].team != team)
+            // Check if there's a piece at the target position
+            if (board[xPos - direction, yPos + direction] != null)
             {
-                r.Add(new Vector2Int(xPos + direction, yPos + direction));
+                // Check if the piece at the target position is of a different team
+                if (board[xPos - direction, yPos + direction].team != team)
+                {
+                    r.Add(new Vector2Int(xPos - direction, yPos + direction));
+                }
             }
-
-            // Check for en passant on the left
-            if (onBoard(xPos - direction, yPos + direction) && xPos - direction == ChessBoard.enPassantX && board[xPos - direction, yPos].team != team)
+            else if (xPos - direction == ChessBoard.enPassantX && yPos == (4 - team))
             {
+                // Add en passant move if applicable
                 r.Add(new Vector2Int(xPos - direction, yPos + direction));
             }
         }
@@ -58,5 +66,4 @@ public class Pawn : Pieces
     {
         return x >= 0 && x < 8 && y >= 0 && y < 8;
     }
-
 }

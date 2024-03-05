@@ -109,8 +109,6 @@ public class ChessBoard : MonoBehaviour
                 board[hitPos.x, hitPos.y].layer = LayerMask.NameToLayer("Hover");
             }
 
-            Debug.Log(isCheckmate());
-            Debug.Log(isInCheck);
             if (isCheckmate())
             {
                 Debug.Log("white wins: " + whiteTurn);
@@ -264,7 +262,6 @@ public class ChessBoard : MonoBehaviour
         }
 
         teamInCheck = simCheckMove(selPiece, x, y, previousPos);
-        Debug.Log("the team in check is: "+teamInCheck);
         if (makeChanges)
         {
             if (teamInCheck == -1)
@@ -288,15 +285,6 @@ public class ChessBoard : MonoBehaviour
             }
         
             PositionSinglePiece(x, y);
-
-            Debug.Log("checkmate checking " +isCheckmate());
-            Debug.Log("in check check"+isInCheck);
-            Debug.Log("in check check"+isInCheck);
-            if (isCheckmate())
-            {
-                Debug.Log("Game Over - Checkmate!");
-                Debug.Log("Winner: " + (whiteTurn ? "Black" : "White"));
-            }
         }
 
         return true;
@@ -349,7 +337,6 @@ public class ChessBoard : MonoBehaviour
     {
         if (!isInCheck)
         {
-            Debug.Log("not in check fail");
             return false;
         }
 
@@ -365,13 +352,11 @@ public class ChessBoard : MonoBehaviour
                 {
                     if (simCheckMove(currentPiece, move.x, move.y, new Vector2Int(currentPiece.xPos, currentPiece.yPos)) != currentPiece.team)
                     {
-                        Debug.Log("fail sim check "+move+currentPiece+currentPiece.team);
                         return false;
                     }
                 }
             }
         }
-        Debug.Log("Checkmate detected!");
         return true;
     }
 

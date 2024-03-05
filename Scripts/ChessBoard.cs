@@ -1,8 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Runtime.InteropServices.WindowsRuntime;
-using Mono.Cecil.Cil;
-using Unity.VisualScripting;
 using UnityEngine;
 
 public class ChessBoard : MonoBehaviour
@@ -148,6 +145,7 @@ public class ChessBoard : MonoBehaviour
                             }
                         }
 
+
                         HighlightTiles();
                     }
                 }
@@ -166,6 +164,33 @@ public class ChessBoard : MonoBehaviour
                     whiteCamera.SetActive(!whiteCamera.activeSelf);
                     blackCamera.SetActive(!blackCamera.activeSelf);
                     currentCamera = Camera.main;
+                    RemoveHighlightTiles();
+                    foreach (Pieces piece in chessPieces)
+                    {
+                        if (piece != null && ((piece.team == 0) == whiteTurn) && piece.type == ChessPieceType.King)
+                        {
+                            selectedPiece = piece;
+                            availableMoves = selectedPiece.GetAvailableMoves(ref chessPieces);
+                            if (availableMoves.Count > 0)
+                            {
+                                List<Vector2Int> movesToRemove = new List<Vector2Int>();
+                                foreach (Vector2Int move in availableMoves)
+                                {
+                                    if (!MoveTo(selectedPiece, move.x, move.y, false))
+                                    {
+                                        movesToRemove.Add(move);
+                                    }
+                                }
+
+                                foreach (Vector2Int illegalMove in movesToRemove)
+                                {
+                                    availableMoves.Remove(illegalMove);
+                                }
+                            }
+
+                            break;
+                        }
+                    }
                 }
                 selectedPiece = null;
                 RemoveHighlightTiles();
@@ -193,6 +218,7 @@ public class ChessBoard : MonoBehaviour
         }
     }
 
+
     private bool MoveTo(Pieces selPiece, int x, int y, bool makeChanges)
     {
         if (!ContainsValidMove(ref availableMoves, new Vector2(x, y)))
@@ -207,23 +233,13 @@ public class ChessBoard : MonoBehaviour
 
         Vector2Int previousPos = new Vector2Int(selPiece.xPos, selPiece.yPos);
         int teamInCheck = simCheckMove(selPiece, x, y, previousPos);
-        Debug.Log("sim check: " + teamInCheck);
 
-        if (previousPos == new Vector2Int(x, y))
-        {
-            return false;
-        }
-
-
-        
-        
-        Debug.Log("before past " + isInCheck);
         if (teamInCheck == selPiece.team)
         {
+            isInCheck = true;
             return false;
         }
         
-
         if (chessPieces[x, y] != null)
         {
             Pieces targetPiece = chessPieces[x, y];
@@ -247,25 +263,19 @@ public class ChessBoard : MonoBehaviour
             }
         }
 
-        Debug.Log("made it past");
-        Debug.Log("after past " + isInCheck);
         teamInCheck = simCheckMove(selPiece, x, y, previousPos);
+        Debug.Log("the team in check is: "+teamInCheck);
         if (makeChanges)
         {
-            Debug.Log("making changes");
             if (teamInCheck == -1)
             {
-                Debug.Log("no check");
                 isInCheck = false;
             }
             else
             {
-                Debug.Log("yes check");
                 isInCheck = true;
             }
         }
-        Debug.Log("after if " + isInCheck);
-        
 
         if (makeChanges)
         {
@@ -277,23 +287,43 @@ public class ChessBoard : MonoBehaviour
                 enPassantX = x;
             }
         
-        
-
             PositionSinglePiece(x, y);
+
+            Debug.Log("checkmate checking " +isCheckmate());
+            Debug.Log("in check check"+isInCheck);
+            Debug.Log("in check check"+isInCheck);
+            if (isCheckmate())
+            {
+                Debug.Log("Game Over - Checkmate!");
+                Debug.Log("Winner: " + (whiteTurn ? "Black" : "White"));
+            }
         }
 
         return true;
     }
 
+
     private int simCheckMove(Pieces selPiece, int targetX, int targetY, Vector2Int previousPos)
     {
-        Pieces[,] chessPiecesCopy = new Pieces[8,8];
-        Array.Copy(chessPieces, chessPiecesCopy, chessPieces.Length);
+        Pieces[,] chessPiecesCopy = new Pieces[8, 8];
+        for (int i = 0; i < 8; i++)
+        {
+            for (int j = 0; j < 8; j++)
+            {
+                if (chessPieces[i, j] != null)
+                {
+                    // Copy attributes from the original piece to the clone
+                    chessPiecesCopy[i, j] = Instantiate(chessPieces[i, j]).GetComponent<Pieces>();
+                    chessPiecesCopy[i, j].CopyAttributes(chessPieces[i, j]);
+                }
+            }
+        }
 
+        // Place the selected piece and remove it from its previous position
         chessPiecesCopy[targetX, targetY] = selPiece;
         chessPiecesCopy[previousPos.x, previousPos.y] = null;
-        
 
+        // Check for possible moves and if the opponent's king is in check
         foreach (Pieces currentSimPiece in chessPiecesCopy)
         {
             if (currentSimPiece != null)
@@ -302,22 +332,24 @@ public class ChessBoard : MonoBehaviour
 
                 foreach (Vector2Int move in availableMovesCopy)
                 {
-                    Pieces targetPos = chessPiecesCopy[move.x, move.y];
-                    if (targetPos != null && targetPos.type == ChessPieceType.King && targetPos.team != currentSimPiece.team)
+                    Pieces targetPiece = chessPiecesCopy[move.x, move.y];
+                    if (targetPiece != null && targetPiece.type == ChessPieceType.King && targetPiece.team != currentSimPiece.team)
                     {
-                        return targetPos.team;
+                        return targetPiece.team; // Return the team of the king in check
                     }
                 }
             }
         }
 
-        return -1;
+        return -1; // Return -1 if no king is in check
     }
+
 
     private bool isCheckmate()
     {
         if (!isInCheck)
         {
+            Debug.Log("not in check fail");
             return false;
         }
 
@@ -333,13 +365,16 @@ public class ChessBoard : MonoBehaviour
                 {
                     if (simCheckMove(currentPiece, move.x, move.y, new Vector2Int(currentPiece.xPos, currentPiece.yPos)) != currentPiece.team)
                     {
+                        Debug.Log("fail sim check "+move+currentPiece+currentPiece.team);
                         return false;
                     }
                 }
             }
         }
+        Debug.Log("Checkmate detected!");
         return true;
     }
+
 
     // Generate the board with individual tiles
     private void CreateBoard(float boardSize)

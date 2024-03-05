@@ -30,7 +30,15 @@ public class Pieces : MonoBehaviour
     // Target position and scale for movements and animations
     private Vector3 targetPos;
     private Vector3 targetScale;
-    
+
+    // Copy attributes from another Pieces object
+    public void CopyAttributes(Pieces original)
+    {
+        // Copy attributes from the original piece
+        type = original.type;
+        team = original.team;
+        // Copy any other attributes as needed
+    }
 
     private void Update()
     {
@@ -51,6 +59,4 @@ public class Pieces : MonoBehaviour
             transform.position = targetPos;
         }
     }
-
-
 }

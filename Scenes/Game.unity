@@ -154,6 +154,7 @@ MonoBehaviour:
   teamColour:
   - {fileID: 2100000, guid: 147b7f0c09462914f84d4d30d1fdacaa, type: 2}
   - {fileID: 2100000, guid: 02b855bbe3f624b49ac030acd880c00b, type: 2}
+  FEN: rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1
   whiteCamera: {fileID: 963194225}
   blackCamera: {fileID: 1557111417}
   whiteKingCastle: 1

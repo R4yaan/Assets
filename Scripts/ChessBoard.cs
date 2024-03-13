@@ -1,6 +1,8 @@
 using System;
 using System.Collections.Generic;
+using System.Data.Common;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 public class ChessBoard : MonoBehaviour
 {
@@ -20,7 +22,7 @@ public class ChessBoard : MonoBehaviour
     private Vector3 bounds;
 
     // FEN notation of board (starting position)
-    private string[] FEN;
+    [SerializeField] private string FEN;
     //private string[] FEN = {"rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR", "w", "KQkq", "-", "0 1"};
 
     // All active chess pieces
@@ -56,21 +58,31 @@ public class ChessBoard : MonoBehaviour
 
     private void Awake()
     {
+        if (SceneManager.GetActiveScene().name == "Tutorial")
+        {
+            FEN = "8/8/8/8/8/8/8/8 w - - 0 1";
+        }
+
         whiteCamera.SetActive(true);
         blackCamera.SetActive(false);
 
         // Initialize the chessboard
         CreateBoard(tileSize);
 
-        if (FEN != null)
+        if (FEN.Length > 1)
         {
-            InterpretFEN(FEN);
+            chessPieces = InterpretFEN(FEN);
         }
         else
         {
             SpawnAllPieces();
         }
         PositionAllPieces();
+
+        if (SceneManager.GetActiveScene().name == "Tutorial")
+        {
+            Tutorial();
+        }
     }
 
     private void Update()
@@ -541,8 +553,10 @@ public class ChessBoard : MonoBehaviour
         return new Vector2Int(-1, -1);
     }
 
-    private Pieces[,] InterpretFEN(string[] FEN)
+    private Pieces[,] InterpretFEN(string FENString)
     {
+        string[] FEN = FENString.Split(' ');
+
         Pieces[,] pieces = new Pieces[8, 8];
 
         int rank = 7;
@@ -550,28 +564,29 @@ public class ChessBoard : MonoBehaviour
 
         int white = 0;
         int black = 1;
-        var pieceCodes = new Dictionary<char, Pieces>()
+        var pieceCodes = new Dictionary<char, Tuple<ChessPieceType, int>>()
         {
-            {'r', SpawnSinglePiece(ChessPieceType.Rook, black)},
-            {'n', SpawnSinglePiece(ChessPieceType.Knight, black)},
-            {'b', SpawnSinglePiece(ChessPieceType.Bishop, black)},
-            {'q', SpawnSinglePiece(ChessPieceType.Queen, black)},
-            {'k', SpawnSinglePiece(ChessPieceType.King, black)},
-            {'p', SpawnSinglePiece(ChessPieceType.Pawn, black)},
-            {'R', SpawnSinglePiece(ChessPieceType.Rook, white)},
-            {'N', SpawnSinglePiece(ChessPieceType.Knight, white)},
-            {'B', SpawnSinglePiece(ChessPieceType.Bishop, white)},
-            {'Q', SpawnSinglePiece(ChessPieceType.Queen, white)},
-            {'K', SpawnSinglePiece(ChessPieceType.King, white)},
-            {'P', SpawnSinglePiece(ChessPieceType.Pawn, white)}
+            {'r', Tuple.Create(ChessPieceType.Rook, black)},
+            {'n', Tuple.Create(ChessPieceType.Knight, black)},
+            {'b', Tuple.Create(ChessPieceType.Bishop, black)},
+            {'q', Tuple.Create(ChessPieceType.Queen, black)},
+            {'k', Tuple.Create(ChessPieceType.King, black)},
+            {'p', Tuple.Create(ChessPieceType.Pawn, black)},
+            {'R', Tuple.Create(ChessPieceType.Rook, white)},
+            {'N', Tuple.Create(ChessPieceType.Knight, white)},
+            {'B', Tuple.Create(ChessPieceType.Bishop, white)},
+            {'Q', Tuple.Create(ChessPieceType.Queen, white)},
+            {'K', Tuple.Create(ChessPieceType.King, white)},
+            {'P', Tuple.Create(ChessPieceType.Pawn, white)}
         };
+
         for (int i = 0; i < FEN[0].Length; i++)
         {
             char character = FEN[0][i];
             if (character == '/')
             {
-                rank--;
                 file = 0;
+                rank--;
             }
             else if (char.IsDigit(character))
             {
@@ -579,7 +594,7 @@ public class ChessBoard : MonoBehaviour
             }
             else
             {
-                pieces[file, rank] = pieceCodes[character];
+                pieces[file, rank] = SpawnSinglePiece(pieceCodes[character].Item1, pieceCodes[character].Item2);
                 file++;
             }
         }
@@ -601,5 +616,88 @@ public class ChessBoard : MonoBehaviour
         fullmoveClock = int.Parse(FEN[5]);
 
         return pieces;
+    }
+
+    private void Tutorial()
+    {
+        chessPieces = new Pieces[8, 8];
+
+        chessPieces[4, 1] = SpawnSinglePiece(ChessPieceType.Pawn, 0);
+        PositionSinglePiece(4, 1);
+
+        foreach (Pieces piece in chessPieces)
+        {
+            if (piece)
+            {
+                Destroy(chessPieces[piece.xPos, piece.yPos].gameObject);
+                chessPieces[piece.xPos, piece.yPos] = null;
+            }
+        }
+
+
+        chessPieces[4, 1] = SpawnSinglePiece(ChessPieceType.Knight, 0);
+        PositionSinglePiece(4, 1);
+
+        foreach (Pieces piece in chessPieces)
+        {
+            if (piece)
+            {
+                Destroy(chessPieces[piece.xPos, piece.yPos].gameObject);
+                chessPieces[piece.xPos, piece.yPos] = null;
+            }
+        }
+
+
+        chessPieces[4, 1] = SpawnSinglePiece(ChessPieceType.Rook, 0);
+        PositionSinglePiece(4, 1);
+
+        foreach (Pieces piece in chessPieces)
+        {
+            if (piece)
+            {
+                Destroy(chessPieces[piece.xPos, piece.yPos].gameObject);
+                chessPieces[piece.xPos, piece.yPos] = null;
+            }
+        }
+
+
+        chessPieces[4, 1] = SpawnSinglePiece(ChessPieceType.Bishop, 0);
+        PositionSinglePiece(4, 1);
+
+        foreach (Pieces piece in chessPieces)
+        {
+            if (piece)
+            {
+                Destroy(chessPieces[piece.xPos, piece.yPos].gameObject);
+                chessPieces[piece.xPos, piece.yPos] = null;
+            }
+        }
+
+
+        chessPieces[4, 1] = SpawnSinglePiece(ChessPieceType.Queen, 0);
+        PositionSinglePiece(4, 1);
+
+        foreach (Pieces piece in chessPieces)
+        {
+            if (piece)
+            {
+                Destroy(chessPieces[piece.xPos, piece.yPos].gameObject);
+                chessPieces[piece.xPos, piece.yPos] = null;
+            }
+        }
+
+
+        chessPieces[4, 1] = SpawnSinglePiece(ChessPieceType.King, 0);
+        PositionSinglePiece(4, 1);
+
+        foreach (Pieces piece in chessPieces)
+        {
+            if (piece)
+            {
+                Destroy(chessPieces[piece.xPos, piece.yPos].gameObject);
+                chessPieces[piece.xPos, piece.yPos] = null;
+            }
+        }
+
     }
 }

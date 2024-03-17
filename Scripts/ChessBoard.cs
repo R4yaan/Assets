@@ -1,8 +1,12 @@
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Data.Common;
+using TMPro;
 using UnityEngine;
+using UnityEngine.Rendering;
 using UnityEngine.SceneManagement;
+using UnityEngine.UI;
 
 public class ChessBoard : MonoBehaviour
 {
@@ -36,6 +40,7 @@ public class ChessBoard : MonoBehaviour
     private bool isInCheck = false;
     public GameObject whiteCamera;
     public GameObject blackCamera;
+    public TextMeshProUGUI textBox;
 
     // Piece that is currently selected to be moved
     private Pieces selectedPiece;
@@ -81,7 +86,7 @@ public class ChessBoard : MonoBehaviour
 
         if (SceneManager.GetActiveScene().name == "Tutorial")
         {
-            Tutorial();
+            StartCoroutine(Tutorial());
         }
     }
 
@@ -618,13 +623,144 @@ public class ChessBoard : MonoBehaviour
         return pieces;
     }
 
-    private void Tutorial()
+   
+    private IEnumerator Tutorial()
     {
+        // Set up the chessboard
         chessPieces = new Pieces[8, 8];
 
+        textBox.text = "Welcome to the tutorial. Click to continue";
+        yield return new WaitUntil(() => Input.GetMouseButtonDown(0));
+        yield return new WaitForEndOfFrame();
+
+        // Place a pawn and explain its movement
         chessPieces[4, 1] = SpawnSinglePiece(ChessPieceType.Pawn, 0);
         PositionSinglePiece(4, 1);
+        textBox.text = "This is a pawn. It can move 1 square forward or 2 squares forward on its first move";
+        yield return new WaitUntil(() => Input.GetMouseButtonDown(0));
+        yield return new WaitForEndOfFrame();
 
+        // Move the pawn two squares forward
+        chessPieces[4, 3] = chessPieces[4, 1];
+        chessPieces[4, 1] = null;
+        PositionSinglePiece(4, 3);
+        textBox.text = "This is the pawn moving forward 2 squares";
+        yield return new WaitUntil(() => Input.GetMouseButtonDown(0));
+        yield return new WaitForEndOfFrame();
+
+        // Move the pawn one more square forward
+        chessPieces[4, 4] = chessPieces[4, 3];
+        chessPieces[4, 3] = null;
+        PositionSinglePiece(4, 4);
+        textBox.text = "This is the pawn moving forward 1 more square";
+        yield return new WaitUntil(() => Input.GetMouseButtonDown(0));
+        yield return new WaitForEndOfFrame();
+
+        // Clear the board
+        ClearBoard();
+
+        // Place a knight and explain its movement
+        chessPieces[1, 0] = SpawnSinglePiece(ChessPieceType.Knight, 0);
+        PositionSinglePiece(1, 0);
+        textBox.text = "This is a knight. It can move in an L-shape (2 vertically/horizontally then 1 horizontally/vertically)";
+        yield return new WaitUntil(() => Input.GetMouseButtonDown(0));
+        yield return new WaitForEndOfFrame();
+
+        // Move the knight in an L-shape
+        chessPieces[2, 2] = chessPieces[1, 0];
+        chessPieces[1, 0] = null;
+        PositionSinglePiece(2, 2);
+        textBox.text = "This is the knight moving 2 squares vertically then 1 square horizontally";
+        yield return new WaitUntil(() => Input.GetMouseButtonDown(0));
+        yield return new WaitForEndOfFrame();
+
+        ClearBoard();
+
+        // Place a bishop and explain its movement
+        chessPieces[2, 0] = SpawnSinglePiece(ChessPieceType.Bishop, 0);
+        PositionSinglePiece(2, 0);
+        textBox.text = "This is a bishop. It can move diagonally";
+        yield return new WaitUntil(() => Input.GetMouseButtonDown(0));
+        yield return new WaitForEndOfFrame();
+
+        // Move the bishop diagonally
+        chessPieces[5, 3] = chessPieces[2, 0];
+        chessPieces[2, 0] = null;
+        PositionSinglePiece(5, 3);
+        textBox.text = "This is the bishop moving diagonally";
+        yield return new WaitUntil(() => Input.GetMouseButtonDown(0));
+        yield return new WaitForEndOfFrame();
+
+        ClearBoard();
+
+        // Place a rook and explain its movement
+        chessPieces[0, 0] = SpawnSinglePiece(ChessPieceType.Rook, 0);
+        PositionSinglePiece(0, 0);
+        textBox.text = "This is a rook. It can move horizontally or vertically";
+        yield return new WaitUntil(() => Input.GetMouseButtonDown(0));
+        yield return new WaitForEndOfFrame();
+
+        // Move the rook horizontally
+        chessPieces[7, 0] = chessPieces[0, 0];
+        chessPieces[0, 0] = null;
+        PositionSinglePiece(7, 0);
+        textBox.text = "This is the rook moving horizontally";
+        yield return new WaitUntil(() => Input.GetMouseButtonDown(0));
+        yield return new WaitForEndOfFrame();
+
+        ClearBoard();
+
+        // Place a queen and explain its movement
+        chessPieces[3, 0] = SpawnSinglePiece(ChessPieceType.Queen, 0);
+        PositionSinglePiece(3, 0);
+        textBox.text = "This is a queen. It combines the movements of a rook and a bishop";
+        yield return new WaitUntil(() => Input.GetMouseButtonDown(0));
+        yield return new WaitForEndOfFrame();
+
+        // Move the queen diagonally
+        chessPieces[7, 4] = chessPieces[3, 0];
+        chessPieces[3, 0] = null;
+        PositionSinglePiece(7, 4);
+        textBox.text = "This is the queen moving diagonally";
+        yield return new WaitUntil(() => Input.GetMouseButtonDown(0));
+        yield return new WaitForEndOfFrame();
+
+        // Move the queen vertically
+        chessPieces[7, 7] = chessPieces[7, 4];
+        chessPieces[7, 4] = null;
+        PositionSinglePiece(7, 7);
+        textBox.text = "This is the queen moving vertically";
+        yield return new WaitUntil(() => Input.GetMouseButtonDown(0));
+        yield return new WaitForEndOfFrame();
+
+        ClearBoard();
+
+        // Place a king and explain its movement
+        chessPieces[4, 0] = SpawnSinglePiece(ChessPieceType.King, 0);
+        PositionSinglePiece(4, 0);
+        textBox.text = "This is a king. It can move one square in any direction";
+        yield return new WaitUntil(() => Input.GetMouseButtonDown(0));
+        yield return new WaitForEndOfFrame();
+
+        // Move the king one square diagonally
+        chessPieces[5, 1] = chessPieces[4, 0];
+        chessPieces[4, 0] = null;
+        PositionSinglePiece(5, 1);
+        textBox.text = "This is the king moving diagonally";
+        yield return new WaitUntil(() => Input.GetMouseButtonDown(0));
+        yield return new WaitForEndOfFrame();
+
+        ClearBoard();
+
+        textBox.text = "End of tutorial. Click to return to main menu";
+        yield return new WaitUntil(() => Input.GetMouseButtonDown(0));
+        yield return new WaitForEndOfFrame();
+        SceneManager.LoadScene("MainMenu");
+    }
+
+
+    private void ClearBoard()
+    {
         foreach (Pieces piece in chessPieces)
         {
             if (piece)
@@ -633,71 +769,5 @@ public class ChessBoard : MonoBehaviour
                 chessPieces[piece.xPos, piece.yPos] = null;
             }
         }
-
-
-        chessPieces[4, 1] = SpawnSinglePiece(ChessPieceType.Knight, 0);
-        PositionSinglePiece(4, 1);
-
-        foreach (Pieces piece in chessPieces)
-        {
-            if (piece)
-            {
-                Destroy(chessPieces[piece.xPos, piece.yPos].gameObject);
-                chessPieces[piece.xPos, piece.yPos] = null;
-            }
-        }
-
-
-        chessPieces[4, 1] = SpawnSinglePiece(ChessPieceType.Rook, 0);
-        PositionSinglePiece(4, 1);
-
-        foreach (Pieces piece in chessPieces)
-        {
-            if (piece)
-            {
-                Destroy(chessPieces[piece.xPos, piece.yPos].gameObject);
-                chessPieces[piece.xPos, piece.yPos] = null;
-            }
-        }
-
-
-        chessPieces[4, 1] = SpawnSinglePiece(ChessPieceType.Bishop, 0);
-        PositionSinglePiece(4, 1);
-
-        foreach (Pieces piece in chessPieces)
-        {
-            if (piece)
-            {
-                Destroy(chessPieces[piece.xPos, piece.yPos].gameObject);
-                chessPieces[piece.xPos, piece.yPos] = null;
-            }
-        }
-
-
-        chessPieces[4, 1] = SpawnSinglePiece(ChessPieceType.Queen, 0);
-        PositionSinglePiece(4, 1);
-
-        foreach (Pieces piece in chessPieces)
-        {
-            if (piece)
-            {
-                Destroy(chessPieces[piece.xPos, piece.yPos].gameObject);
-                chessPieces[piece.xPos, piece.yPos] = null;
-            }
-        }
-
-
-        chessPieces[4, 1] = SpawnSinglePiece(ChessPieceType.King, 0);
-        PositionSinglePiece(4, 1);
-
-        foreach (Pieces piece in chessPieces)
-        {
-            if (piece)
-            {
-                Destroy(chessPieces[piece.xPos, piece.yPos].gameObject);
-                chessPieces[piece.xPos, piece.yPos] = null;
-            }
-        }
-
     }
 }

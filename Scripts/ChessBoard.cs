@@ -55,6 +55,8 @@ public class ChessBoard : MonoBehaviour
     public static bool whiteQueenCastle = true;
     public static bool blackKingCastle = true;
     public static bool blackQueenCastle = true;
+    // Promotion file
+    public static char pawnPromotionFile;
 
     // 75 move rule
     int halfmoveClock = 0;
@@ -218,6 +220,21 @@ public class ChessBoard : MonoBehaviour
                                 whiteKingCastle = false;
                             }
                         }
+                    }
+
+                    if (selectedPiece.type == ChessPieceType.Pawn)
+                    {
+                        if (hitPos.y == 7 && selectedPiece.team == 0)
+                        {
+                            Destroy(chessPieces[hitPos.x, hitPos.y].gameObject);
+                            chessPieces[hitPos.x, hitPos.y] = SpawnSinglePiece(ChessPieceType.Queen, 0);
+                        }
+                        else if (hitPos.y == 1 && selectedPiece.team == 1)
+                        {
+                            Destroy(chessPieces[hitPos.x, hitPos.y].gameObject);
+                            chessPieces[hitPos.x, hitPos.y] = SpawnSinglePiece(ChessPieceType.Queen, 1);
+                        }
+                        PositionSinglePiece(hitPos.x, hitPos.y);
                     }
 
                     foreach (Pieces piece in chessPieces)

@@ -5,7 +5,7 @@ public class Rook : Pieces
 {
     public override List<Vector2Int> GetAvailableMoves(ref Pieces[,] board)
     {
-        List<Vector2Int> r = new List<Vector2Int>();
+        List<Vector2Int> moves = new List<Vector2Int>();
 
         // Rook move up
         for (int i = yPos + 1; i < 8; i++)
@@ -14,13 +14,13 @@ public class Rook : Pieces
             {
                 if (board[xPos, i] == null)
                 {
-                    r.Add(new Vector2Int(xPos, i));
+                    moves.Add(new Vector2Int(xPos, i));
                 }
                 else
                 {
                     if (board[xPos, i].team != team)
                     {
-                        r.Add(new Vector2Int(xPos, i));
+                        moves.Add(new Vector2Int(xPos, i));
                     }
                     break;
                 }
@@ -34,13 +34,13 @@ public class Rook : Pieces
             {
                 if (board[xPos, i] == null)
                 {
-                    r.Add(new Vector2Int(xPos, i));
+                    moves.Add(new Vector2Int(xPos, i));
                 }
                 else
                 {
                     if (board[xPos, i].team != team)
                     {
-                        r.Add(new Vector2Int(xPos, i));
+                        moves.Add(new Vector2Int(xPos, i));
                     }
                     break;
                 }
@@ -54,13 +54,13 @@ public class Rook : Pieces
             {
                 if (board[i, yPos] == null)
                 {
-                    r.Add(new Vector2Int(i, yPos));
+                    moves.Add(new Vector2Int(i, yPos));
                 }
                 else
                 {
                     if (board[i, yPos].team != team)
                     {
-                        r.Add(new Vector2Int(i, yPos));
+                        moves.Add(new Vector2Int(i, yPos));
                     }
                     break;
                 }
@@ -74,20 +74,20 @@ public class Rook : Pieces
             {
                 if (board[i, yPos] == null)
                 {
-                    r.Add(new Vector2Int(i, yPos));
+                    moves.Add(new Vector2Int(i, yPos));
                 }
                 else
                 {
                     if (board[i, yPos].team != team)
                     {
-                        r.Add(new Vector2Int(i, yPos));
+                        moves.Add(new Vector2Int(i, yPos));
                     }
                     break;
                 }
             }
         }
 
-        return r;
+        return moves;
     }
 
     private bool onBoard(int x, int y)

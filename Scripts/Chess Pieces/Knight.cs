@@ -5,7 +5,7 @@ public class Knight : Pieces
 {
     public override List<Vector2Int> GetAvailableMoves(ref Pieces[,] board)
     {
-        List<Vector2Int> r = new List<Vector2Int>();
+        List<Vector2Int> moves = new List<Vector2Int>();
 
         // All possible knight moves
         int[] xOffset = { 1, 1, 2, 2, -1, -1, -2, -2, };
@@ -18,11 +18,11 @@ public class Knight : Pieces
 
             if (onBoard(newX, newY) && (board[newX, newY] == null || board[newX, newY].team != team))
             {
-                r.Add(new Vector2Int(newX, newY));
+                moves.Add(new Vector2Int(newX, newY));
             }
         }
 
-        return r;
+        return moves;
     }
 
     private bool onBoard(int x, int y)

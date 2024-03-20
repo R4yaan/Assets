@@ -5,7 +5,7 @@ public class Bishop : Pieces
 {
     public override List<Vector2Int> GetAvailableMoves(ref Pieces[,] board)
     {
-        List<Vector2Int> r = new List<Vector2Int>();
+        List<Vector2Int> moves = new List<Vector2Int>();
 
         // All possible bishop moves
         int[] xOffset = { 1, 1, -1, -1 };
@@ -28,20 +28,20 @@ public class Bishop : Pieces
 
                 if (board[newX, newY] == null)
                 {
-                    r.Add(new Vector2Int(newX, newY));
+                    moves.Add(new Vector2Int(newX, newY));
                 }
                 else
                 {
                     if (board[newX, newY].team != team)
                     {
-                        r.Add(new Vector2Int(newX, newY));
+                        moves.Add(new Vector2Int(newX, newY));
                     }
                     break; // Stop if capturing enemy piece
                 }
             }
         }
 
-        return r;
+        return moves;
     }
 
     private bool onBoard(int x, int y)

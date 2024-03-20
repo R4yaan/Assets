@@ -47,8 +47,8 @@ public class Pieces : MonoBehaviour
 
     public virtual List<Vector2Int> GetAvailableMoves(ref Pieces[,] board)
     {
-        List<Vector2Int> r = new List<Vector2Int>();
-        return r;
+        List<Vector2Int> moves = new List<Vector2Int>();
+        return moves;
     }
 
     public virtual void setPos(Vector3 pos, bool force = false)

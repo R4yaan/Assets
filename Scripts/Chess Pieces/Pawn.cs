@@ -5,20 +5,20 @@ public class Pawn : Pieces
 {
     public override List<Vector2Int> GetAvailableMoves(ref Pieces[,] board)
     {
-        List<Vector2Int> r = new List<Vector2Int>();
+        List<Vector2Int> moves = new List<Vector2Int>();
 
         int direction = (team == 0) ? 1 : -1;
 
         // Move one square forward
         if (onBoard(xPos, yPos + direction) && board[xPos, yPos + direction] == null)
         {
-            r.Add(new Vector2Int(xPos, yPos + direction));
+            moves.Add(new Vector2Int(xPos, yPos + direction));
         }
 
         // Move two squares forward from starting position
         if (onBoard(xPos, yPos + (2 * direction)) && (yPos == 1 || yPos == 6) && board[xPos, yPos + direction] == null && board[xPos, yPos + (2 * direction)] == null)
         {
-            r.Add(new Vector2Int(xPos, yPos + (2 * direction)));
+            moves.Add(new Vector2Int(xPos, yPos + (2 * direction)));
         }
 
         // Capture diagonally on the right
@@ -30,13 +30,13 @@ public class Pawn : Pieces
                 // Check if the piece at the target position is of a different team
                 if (board[xPos + direction, yPos + direction].team != team)
                 {
-                    r.Add(new Vector2Int(xPos + direction, yPos + direction));
+                    moves.Add(new Vector2Int(xPos + direction, yPos + direction));
                 }
             }
             else if (xPos + direction == ChessBoard.enPassantX && yPos == (4 - team))
             {
                 // Add en passant move if applicable
-                r.Add(new Vector2Int(xPos + direction, yPos + direction));
+                moves.Add(new Vector2Int(xPos + direction, yPos + direction));
             }
         }
 
@@ -49,17 +49,17 @@ public class Pawn : Pieces
                 // Check if the piece at the target position is of a different team
                 if (board[xPos - direction, yPos + direction].team != team)
                 {
-                    r.Add(new Vector2Int(xPos - direction, yPos + direction));
+                    moves.Add(new Vector2Int(xPos - direction, yPos + direction));
                 }
             }
             else if (xPos - direction == ChessBoard.enPassantX && yPos == (4 - team))
             {
                 // Add en passant move if applicable
-                r.Add(new Vector2Int(xPos - direction, yPos + direction));
+                moves.Add(new Vector2Int(xPos - direction, yPos + direction));
             }
         }
 
-        return r;
+        return moves;
     }
 
     private bool onBoard(int x, int y)

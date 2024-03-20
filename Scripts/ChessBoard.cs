@@ -51,10 +51,10 @@ public class ChessBoard : MonoBehaviour
     // En passant pawn X position
     public static int enPassantX = -1;
     // Castling availability
-    public bool whiteKingCastle = true;
-    public bool whiteQueenCastle = true;
-    public bool blackKingCastle = true;
-    public bool blackQueenCastle = true;
+    public static bool whiteKingCastle = true;
+    public static bool whiteQueenCastle = true;
+    public static bool blackKingCastle = true;
+    public static bool blackQueenCastle = true;
 
     // 75 move rule
     int halfmoveClock = 0;
@@ -180,6 +180,46 @@ public class ChessBoard : MonoBehaviour
                     blackCamera.SetActive(!blackCamera.activeSelf);
                     currentCamera = Camera.main;
                     RemoveHighlightTiles();
+
+                    if (selectedPiece.type == ChessPieceType.King)
+                    {
+                        if (selectedPiece.team == 0)
+                        {
+                            whiteKingCastle = false;
+                            whiteQueenCastle = false;
+                        }
+                        else
+                        {
+                            blackKingCastle = false;
+                            blackQueenCastle = false;
+                        }
+                    }
+                    else if (selectedPiece.type == ChessPieceType.Rook)
+                    {
+                        if (selectedPiece.team == 0)
+                        {
+                            if (previousPos.x == 0)
+                            {
+                                whiteQueenCastle = false;
+                            }
+                            else if (selectedPiece.team == 7)
+                            {
+                                whiteKingCastle = false;
+                            }
+                        }
+                        else
+                        {
+                            if (previousPos.x == 0)
+                            {
+                                blackQueenCastle = false;
+                            }
+                            else if (selectedPiece.team == 7)
+                            {
+                                whiteKingCastle = false;
+                            }
+                        }
+                    }
+
                     foreach (Pieces piece in chessPieces)
                     {
                         if (piece != null && ((piece.team == 0) == whiteTurn) && piece.type == ChessPieceType.King)
@@ -206,6 +246,8 @@ public class ChessBoard : MonoBehaviour
                             break;
                         }
                     }
+
+                    
                 }
                 selectedPiece = null;
                 RemoveHighlightTiles();
@@ -299,6 +341,33 @@ public class ChessBoard : MonoBehaviour
             if (selPiece.type == ChessPieceType.Pawn && Math.Abs(y - selPiece.yPos) == 2)
             {
                 enPassantX = x;
+            }
+
+            if (selPiece.type == ChessPieceType.King && Math.Abs(x - selPiece.xPos) > 1)
+            {
+                // Move the rook accordingly
+                if (x > selPiece.xPos) // King side castling
+                {
+                    // Determine the rook's position
+                    int rookX = 7;
+                    int rookY = selPiece.team == 0 ? 0 : 7;
+
+                    // Move the rook to its new position
+                    chessPieces[5, rookY] = chessPieces[rookX, rookY];
+                    chessPieces[rookX, rookY] = null;
+                    PositionSinglePiece(5, rookY); // Update the position of the rook
+                }
+                else // Queen side castling
+                {
+                    // Determine the rook's position
+                    int rookX = 0;
+                    int rookY = selPiece.team == 0 ? 0 : 7;
+
+                    // Move the rook to its new position
+                    chessPieces[3, rookY] = chessPieces[rookX, rookY];
+                    chessPieces[rookX, rookY] = null;
+                    PositionSinglePiece(3, rookY); // Update the position of the rook
+                }                
             }
         
             PositionSinglePiece(x, y);

@@ -5,7 +5,7 @@ public class King : Pieces
 {
     public override List<Vector2Int> GetAvailableMoves(ref Pieces[,] board)
     {
-        List<Vector2Int> r = new List<Vector2Int>();
+        List<Vector2Int> moves = new List<Vector2Int>();
 
         // All ossible king moves
         int[] xOffset = { 1, 1, 1, 0, 0, -1, -1, -1 };
@@ -18,11 +18,36 @@ public class King : Pieces
 
             if (onBoard(newX, newY) && (board[newX, newY] == null || board[newX, newY].team != team))
             {
-                r.Add(new Vector2Int(newX, newY));
+                moves.Add(new Vector2Int(newX, newY));
             }
         }
 
-        return r;
+        // Castling
+        if (team == 0)
+        {
+            if (ChessBoard.whiteKingCastle && board[5, 0] == null && board[6, 0] == null)
+            {
+                moves.Add(new Vector2Int(6, 0));
+            }
+            if (ChessBoard.whiteQueenCastle && board[1, 0] == null && board[2, 0] == null && board[3, 0] == null)
+            {
+                moves.Add(new Vector2Int(2, 0));
+            }
+        }
+        else
+        {
+            if (ChessBoard.blackKingCastle && board[5, 7] == null && board[6, 7] == null)
+            {
+                moves.Add(new Vector2Int(6, 7));
+            }
+            if (ChessBoard.blackQueenCastle && board[1, 7] == null && board[2, 7] == null && board[3, 7] == null)
+            {
+                moves.Add(new Vector2Int(2, 7));
+            }
+        }
+
+
+        return moves;
     }
 
     private bool onBoard(int x, int y)

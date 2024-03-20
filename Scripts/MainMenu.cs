@@ -13,11 +13,12 @@ public class MainMenu : MonoBehaviour
     }
     public void VariantsLoad ()
     {
-        Debug.Log("Variants");
-        //SceneManager.LoadScene("Variants");
+        // Loads a version of the main game scene for local multiplayer with a different starting set up
+        SceneManager.LoadScene("Horde");
     }
     public void TutorialLoad ()
     {
+        // Loads a scene with a board and a tutorial for the player
         SceneManager.LoadScene("Tutorial");
     }
     public void QuitGame ()

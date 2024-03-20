@@ -27,7 +27,6 @@ public class ChessBoard : MonoBehaviour
 
     // FEN notation of board (starting position)
     [SerializeField] private string FEN;
-    //private string[] FEN = {"rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR", "w", "KQkq", "-", "0 1"};
 
     // All active chess pieces
     private Pieces[,] chessPieces;
@@ -37,7 +36,11 @@ public class ChessBoard : MonoBehaviour
 
     // Boolean storing if it is white's turn
     private bool whiteTurn = true;
+
+    // Boolean storing if the current team is in check
     private bool isInCheck = false;
+
+    // Variables to store both camera's game objects and a text box
     public GameObject whiteCamera;
     public GameObject blackCamera;
     public TextMeshProUGUI textBox;
@@ -55,8 +58,6 @@ public class ChessBoard : MonoBehaviour
     public static bool whiteQueenCastle = true;
     public static bool blackKingCastle = true;
     public static bool blackQueenCastle = true;
-    // Promotion file
-    public static char pawnPromotionFile;
 
     // 75 move rule
     int halfmoveClock = 0;
@@ -68,6 +69,10 @@ public class ChessBoard : MonoBehaviour
         if (SceneManager.GetActiveScene().name == "Tutorial")
         {
             FEN = "8/8/8/8/8/8/8/8 w - - 0 1";
+        }
+        else if (SceneManager.GetActiveScene().name == "Horde")
+        {
+            FEN = "rnbqkbnr/pppppppp/8/1PP2PP1/PPPPPPPP/PPPPPPPP/PPPPPPPP/PPPPPPPP w KQkq - 0 1";
         }
 
         whiteCamera.SetActive(true);
@@ -131,6 +136,18 @@ public class ChessBoard : MonoBehaviour
             if (isCheckmate())
             {
                 Debug.Log("white wins: " + whiteTurn);
+            }
+
+
+            if (SceneManager.GetActiveScene().name == "Horde")
+            {
+                foreach (Pieces piece in chessPieces)
+                {
+                    if (piece.team == 0)
+                    {
+                        break;
+                    }
+                }
             }
 
             if (Input.GetMouseButtonDown(0))

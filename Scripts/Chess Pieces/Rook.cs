@@ -7,27 +7,30 @@ public class Rook : Pieces
     {
         List<Vector2Int> moves = new List<Vector2Int>();
 
-        // Rook move up
+        //Rook moving up
         for (int i = yPos + 1; i < 8; i++)
         {
             if (onBoard(xPos, i))
             {
                 if (board[xPos, i] == null)
                 {
+                    //Add positions that are on the board and empty
                     moves.Add(new Vector2Int(xPos, i));
                 }
                 else
                 {
+                    //Add position if the piece is an enemy
                     if (board[xPos, i].team != team)
                     {
                         moves.Add(new Vector2Int(xPos, i));
                     }
                     break;
+                    //Stop adding pieces in this direction after meeting another piece
                 }
             }
         }
 
-        // Rook move down
+        //Rook moving down
         for (int i = yPos - 1; i >= 0; i--)
         {
             if (onBoard(xPos, i))
@@ -47,7 +50,7 @@ public class Rook : Pieces
             }
         }
 
-        // Rook move right
+        //Rook moving right
         for (int i = xPos + 1; i < 8; i++)
         {
             if (onBoard(i, yPos))
@@ -67,7 +70,7 @@ public class Rook : Pieces
             }
         }
 
-        // Rook move left
+        //Rook moving left
         for (int i = xPos - 1; i >= 0; i--)
         {
             if (onBoard(i, yPos))
@@ -88,10 +91,5 @@ public class Rook : Pieces
         }
 
         return moves;
-    }
-
-    private bool onBoard(int x, int y)
-    {
-        return x >= 0 && x < 8 && y >= 0 && y < 8;
     }
 }

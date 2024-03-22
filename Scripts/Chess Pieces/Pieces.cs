@@ -1,7 +1,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-// Stores and numbers all piece types to be immutable
+//Stores and numbers all piece types to be immutable
 public enum ChessPieceType
 {
     None = 0,
@@ -14,45 +14,53 @@ public enum ChessPieceType
 }
 
 
-// Parent class representing individual chess pieces
+//Parent class representing individual chess pieces
 public class Pieces : MonoBehaviour
 {
-    // Team identifier for the chess piece
+    //Stores chess piece team
     public int team;
 
-    // Current X and Y positions of the chess piece on the board
+    //Stores piece's current x and y position
     public int xPos;
     public int yPos;
 
-    // Type of chess piece
+    //Type of chess piece
     public ChessPieceType type;
 
-    // Target position and scale for movements and animations
+    //Target position for movements and animations
     private Vector3 targetPos;
-    private Vector3 targetScale;
 
-    // Copy attributes from another Pieces object
+    //Copy attributes from another Pieces object
     public void CopyAttributes(Pieces original)
     {
-        // Copy attributes from the original piece
+        //Copy attributes from original piece
         type = original.type;
         team = original.team;
-        // Copy any other attributes as needed
     }
+
+    //Function to check if coordinates are on the board
+    public bool onBoard(int x, int y)
+    {
+        return x >= 0 && x < 8 && y >= 0 && y < 8;
+    }
+
 
     private void Update()
     {
+        //Movement animation
         transform.position = Vector3.Lerp(transform.position, targetPos, Time.deltaTime * 8);
     }
 
     public virtual List<Vector2Int> GetAvailableMoves(ref Pieces[,] board)
     {
+        //Class to be overwritten for each piece which returns possbile moves
         List<Vector2Int> moves = new List<Vector2Int>();
         return moves;
     }
 
-    public virtual void setPos(Vector3 pos, bool force = false)
+    public virtual void setPos(Vector3 pos, bool force = false) //Force removes animation
     {
+        //Move the piece
         targetPos = pos;
         if(force)
         {

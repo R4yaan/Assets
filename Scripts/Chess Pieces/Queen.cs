@@ -7,23 +7,25 @@ public class Queen : Pieces
     {
         List<Vector2Int> moves = new List<Vector2Int>();
 
-        // All possible queen moves
-        int[] xOffset = { 1, 1, -1, -1, 1, 0, -1, 0 };
-        int[] yOffset = { 1, -1, 1, -1, 0, 1, 0, -1 };
+        //All possible queen moves
+        int[] xMovement = { 1, 1, -1, -1, 1, 0, -1, 0 };
+        int[] yMovement = { 1, -1, 1, -1, 0, 1, 0, -1 };
 
-        for (int i = 0; i < xOffset.Length; i++)
+        for (int i = 0; i < xMovement.Length; i++)
         {
+            //Goes through all the positions in the x and y movement directions
+
             int newX = xPos;
             int newY = yPos;
 
             while (true)
             {
-                newX += xOffset[i];
-                newY += yOffset[i];
+                newX += xMovement[i];
+                newY += yMovement[i];
 
                 if (!onBoard(newX, newY))
                 {
-                    break; // End loop if out of board
+                    break; //End loop if out of board
                 }
 
                 if (board[newX, newY] == null)
@@ -36,16 +38,11 @@ public class Queen : Pieces
                     {
                         moves.Add(new Vector2Int(newX, newY));
                     }
-                    break; // Stop if capturing enemy piece
+                    break; //End loop if there is a piece on target position
                 }
             }
         }
 
         return moves;
-    }
-
-    private bool onBoard(int x, int y)
-    {
-        return x >= 0 && x < 8 && y >= 0 && y < 8;
     }
 }

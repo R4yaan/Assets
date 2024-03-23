@@ -25,7 +25,7 @@ public class Rook : Pieces
                         moves.Add(new Vector2Int(xPos, i));
                     }
                     break;
-                    //Stop adding pieces in this direction after meeting another piece
+                    //Stop adding pieces in this direction after another piece
                 }
             }
         }

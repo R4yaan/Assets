@@ -13,7 +13,7 @@ public class MainMenu : MonoBehaviour
     }
     public void VariantsLoad ()
     {
-        //Loads a version of the main game scene for local multiplayer with a different starting set up
+        //Loads local multiplayer with a different starting set up
         SceneManager.LoadScene("Horde");
     }
     public void TutorialLoad ()
@@ -24,7 +24,6 @@ public class MainMenu : MonoBehaviour
     public void QuitGame ()
     {
         //Closes application
-        Debug.Log("Quit"); //Cannot quit application in unity editor
         Application.Quit();
     }
 

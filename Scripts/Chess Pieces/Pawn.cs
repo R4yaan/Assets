@@ -17,7 +17,10 @@ public class Pawn : Pieces
         }
 
         //Move two squares forward from starting position
-        if (onBoard(xPos, yPos + (2 * direction)) && (yPos == 1 || yPos == 6) && board[xPos, yPos + direction] == null && board[xPos, yPos + (2 * direction)] == null)
+        if (onBoard(xPos, yPos + (2 * direction)) &&
+            (yPos == 1 || yPos == 6) &&
+            board[xPos, yPos + direction] == null &&
+            board[xPos, yPos + (2 * direction)] == null)
         {
             moves.Add(new Vector2Int(xPos, yPos + (2 * direction)));
         }

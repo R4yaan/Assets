@@ -18,7 +18,8 @@ public class Knight : Pieces
             int newY = yPos + yMovement[i];
 
             //Check that target position does not have an ally piece
-            if (onBoard(newX, newY) && (board[newX, newY] == null || board[newX, newY].team != team))
+            if (onBoard(newX, newY) &&
+            (board[newX, newY] == null || board[newX, newY].team != team))
             {
                 moves.Add(new Vector2Int(newX, newY));
             }

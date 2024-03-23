@@ -141,7 +141,9 @@ public class ChessBoard : MonoBehaviour
             if (currentlyHovering != hitPos)
             {
                 //If the mouse moves to hover over a different tile, update the highlighted tile
-                board[currentlyHovering.x, currentlyHovering.y].layer = ContainsValidMove(ref availableMoves, currentlyHovering) ? LayerMask.NameToLayer("possibleMove") : LayerMask.NameToLayer("Tile");
+                board[currentlyHovering.x, currentlyHovering.y].layer = ContainsValidMove(ref availableMoves, currentlyHovering) ?
+                                                                                        LayerMask.NameToLayer("possibleMove") :
+                                                                                        LayerMask.NameToLayer("Tile");
                 currentlyHovering = hitPos;
                 board[hitPos.x, hitPos.y].layer = LayerMask.NameToLayer("Hover");
             }
@@ -211,10 +213,12 @@ public class ChessBoard : MonoBehaviour
             if (selectedPiece != null && Input.GetMouseButtonUp(0))
             {
                 Vector2Int previousPos = new Vector2Int(selectedPiece.xPos, selectedPiece.yPos);
-                bool legalMove = MoveTo(selectedPiece, hitPos.x, hitPos.y, true); //Checks if the move trying to be made is legal
+                //Checks if the move trying to be made is legal
+                bool legalMove = MoveTo(selectedPiece, hitPos.x, hitPos.y, true);
                 if (!legalMove)
                 {
-                    selectedPiece.setPos(TileCenter(previousPos.x, previousPos.y)); //Move it back to its previous position if illegal move
+                    //Move it back to its previous position if illegal move
+                    selectedPiece.setPos(TileCenter(previousPos.x, previousPos.y)); 
                 }
                 else
                 {
@@ -223,8 +227,8 @@ public class ChessBoard : MonoBehaviour
                     blackCamera.SetActive(!blackCamera.activeSelf);
                     currentCamera = Camera.main;
                     RemoveHighlightTiles(); //Unhighlight tiles
-
-                    if (selectedPiece.type == ChessPieceType.King) //Change castling availability after king is moved
+                    //Change castling availability after king is moved
+                    if (selectedPiece.type == ChessPieceType.King) 
                     {
                         //Once king moves then that team cannot castle either side
                         if (selectedPiece.team == 0)
@@ -238,9 +242,11 @@ public class ChessBoard : MonoBehaviour
                             blackQueenCastle = false;
                         }
                     }
-                    else if (selectedPiece.type == ChessPieceType.Rook) //Change castling availability if rook is moved
+                    //Change castling availability if rook is moved
+                    else if (selectedPiece.type == ChessPieceType.Rook) 
                     {
-                        if (selectedPiece.team == 0) //If statements to change the correct castling side for the correct team
+                        //If statements to change the correct castling side for the correct team
+                        if (selectedPiece.team == 0) 
                         {
                             if (previousPos.x == 0)
                             {
@@ -269,8 +275,9 @@ public class ChessBoard : MonoBehaviour
                     {
                         if (hitPos.y == 7 && selectedPiece.team == 0) //Check if pawn moved to end of board
                         {
+                            //Destroy pawn and change to queen
                             Destroy(chessPieces[hitPos.x, hitPos.y].gameObject);
-                            chessPieces[hitPos.x, hitPos.y] = SpawnSinglePiece(ChessPieceType.Queen, 0); //Destroy pawn and change to queen
+                            chessPieces[hitPos.x, hitPos.y] = SpawnSinglePiece(ChessPieceType.Queen, 0); 
                         }
                         else if (hitPos.y == 1 && selectedPiece.team == 1)
                         {
@@ -355,9 +362,10 @@ public class ChessBoard : MonoBehaviour
             //If a move is being made then the en passant from the last turn will no longer be possible
             enPassantX = -1;
         }
-
-        Vector2Int previousPos = new Vector2Int(selPiece.xPos, selPiece.yPos); //Stores previous position
-        int teamInCheck = simCheckMove(selPiece, x, y, previousPos); //Stores which team is in check after the move
+        //Stores previous position
+        Vector2Int previousPos = new Vector2Int(selPiece.xPos, selPiece.yPos);
+        //Stores which team is in check after the move
+        int teamInCheck = simCheckMove(selPiece, x, y, previousPos); 
 
         if (teamInCheck == selPiece.team)
         {
@@ -385,7 +393,9 @@ public class ChessBoard : MonoBehaviour
         else if (makeChanges)
         {
             //Check if an en passant capture was made
-            if (selPiece.type == ChessPieceType.Pawn && Math.Abs(y - selPiece.yPos) == 1 && Math.Abs(x - selPiece.xPos) == 1)
+            if (selPiece.type == ChessPieceType.Pawn &&
+                Math.Abs(y - selPiece.yPos) == 1 &&
+                Math.Abs(x - selPiece.xPos) == 1)
             {
                 //Destroys the correct piece in the case of en passant (behind its new position)
                 Destroy(chessPieces[x, (selPiece.team == 0) ? (y - 1) : (y + 1)].gameObject);
@@ -486,7 +496,9 @@ public class ChessBoard : MonoBehaviour
                 {
                     Pieces targetPiece = chessPiecesCopy[move.x, move.y];
                     //Checks if king is a possible target of a move
-                    if (targetPiece != null && targetPiece.type == ChessPieceType.King && targetPiece.team != currentSimPiece.team)
+                    if (targetPiece != null &&
+                        targetPiece.type == ChessPieceType.King &&
+                        targetPiece.team != currentSimPiece.team)
                     {
                         return targetPiece.team; //Return the team of the king in check
                     }
@@ -625,7 +637,8 @@ public class ChessBoard : MonoBehaviour
     //Spawn a single piece
     private Pieces SpawnSinglePiece(ChessPieceType type, int team)
     {
-        Pieces cPiece = Instantiate(prefabs[(int)type - 1], transform).GetComponent<Pieces>(); //Spawn a piece
+        //Spawn a piece
+        Pieces cPiece = Instantiate(prefabs[(int)type - 1], transform).GetComponent<Pieces>();
 
         cPiece.type = type;
         cPiece.team = team;
@@ -802,7 +815,8 @@ public class ChessBoard : MonoBehaviour
         //Place a pawn and explain its movement
         chessPieces[4, 1] = SpawnSinglePiece(ChessPieceType.Pawn, 0);
         PositionSinglePiece(4, 1);
-        textBox.text = "This is a pawn. It can move 1 square forward or 2 squares forward on its first move";
+        textBox.text = 
+        "This is a pawn. It can move 1 square forward or 2 squares forward on its first move";
         yield return new WaitUntil(() => Input.GetMouseButtonDown(0));
         yield return new WaitForEndOfFrame();
 
@@ -828,7 +842,8 @@ public class ChessBoard : MonoBehaviour
         //Place a knight and explain its movement
         chessPieces[1, 0] = SpawnSinglePiece(ChessPieceType.Knight, 0);
         PositionSinglePiece(1, 0);
-        textBox.text = "This is a knight. It can move in an L-shape (2 vertically/horizontally then 1 horizontally/vertically)";
+        textBox.text = 
+        "This is a knight. It can move in an L-shape (2 vertically/horizontally then 1 horizontally/vertically)";
         yield return new WaitUntil(() => Input.GetMouseButtonDown(0));
         yield return new WaitForEndOfFrame();
 

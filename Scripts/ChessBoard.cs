@@ -159,7 +159,7 @@ public class ChessBoard : MonoBehaviour
             {
                 foreach (Pieces piece in chessPieces)
                 {
-                    if (piece.team == 0)
+                    if (piece && piece.team == 0)
                     {
                         //The horde win condition is not met if there is a white piece on the board
                         hordeWin = false;

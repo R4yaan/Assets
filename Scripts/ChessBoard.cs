@@ -170,6 +170,8 @@ public class ChessBoard : MonoBehaviour
                 {
                     SceneManager.LoadScene("Victory");
                 }
+                //Reset the win condition variable for the next check
+                hordeWin = true;
             }
 
             //If clicking, check for pieces getting clicked on
